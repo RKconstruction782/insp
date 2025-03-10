@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RK Construction - PPE & Attendance Form</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #003366;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-group label {
+            width: 45%;
+            margin: 5px 10px;
+        }
+        .workman-section {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+            display: none; /* Initially hidden */
+        }
+        .ppe-list label {
+            display: block;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #003366;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0055A4;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>RK Construction - PPE & Attendance Form</h1>
+        <h2>Vendor Code: R782 | Under TATA Steel Jamshedpur</h2>
+
+        <form id="ppeForm" enctype="multipart/form-data">
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <h3>Mark Attendance</h3>
+            <div class="checkbox-group" id="attendanceList"></div>
+
+            <h3>PPE Checklist</h3>
+            <div id="ppeChecklist"></div>
+
+            <h3>Upload Documents (Mandatory)</h3>
+            <label>Toolbox Meeting (PDF/JPEG):</label>
+            <input type="file" name="toolbox_meeting" accept=".pdf, .jpeg, .jpg" required>
+
+            <label>Work Permit (PDF/JPEG):</label>
+            <input type="file" name="work_permit" accept=".pdf, .jpeg, .jpg" required>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="footer">
+            &copy; 2024 RK Construction | Vendor Code: R782 | TATA Steel Jamshedpur
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ppeItems = ["Safety Goggles", "Nose Mask", "Hand Gloves", "Ear Plugs", "Safety Vest (FR)", "Safety Helmet", "Safety Shoes"];
+            const workmen = ["Ajit Kumar Sharma", "Dilip Kumar Mahato", "Jhujhar Murmu", "Gangaram Samad", "Kali Kinker Bera", "Vishnu Kumar Sahu", "Ayodhya Sharma"];
+
+            const attendanceList = document.getElementById("attendanceList");
+            const ppeChecklistDiv = document.getElementById("ppeChecklist");
+
+            workmen.forEach(worker => {
+                // Create attendance checkbox
+                let attendanceLabel = document.createElement("label");
+                let attendanceCheckbox = document.createElement("input");
+                attendanceCheckbox.type = "checkbox";
+                attendanceCheckbox.name = "workmen";
+                attendanceCheckbox.value = worker;
+                attendanceCheckbox.addEventListener("change", togglePPESection);
+
+                attendanceLabel.appendChild(attendanceCheckbox);
+                attendanceLabel.appendChild(document.createTextNode(` ${worker}`));
+                attendanceList.appendChild(attendanceLabel);
+
+                // Create PPE checklist (hidden by default)
+                let section = document.createElement("div");
+                section.className = "workman-section";
+                section.id = `${worker.replace(/\s+/g, '_')}_ppe_section`;
+                section.style.display = "none";
+                section.innerHTML = `<strong>${worker}</strong>`;
+
+                let ppeList = document.createElement("div");
+                ppeList.className = "ppe-list";
+
+                ppeItems.forEach(item => {
+                    let label = document.createElement("label");
+                    label.innerHTML = `<input type="checkbox" name="${worker}_ppe" value="${item}"> ${item}`;
+                    ppeList.appendChild(label);
+                });
+
+                section.appendChild(ppeList);
+                ppeChecklistDiv.appendChild(section);
+            });
+
+            function togglePPESection() {
+                workmen.forEach(worker => {
+                    let section = document.getElementById(`${worker.replace(/\s+/g, '_')}_ppe_section`);
+                    let checkbox = [...attendanceList.querySelectorAll("input[type='checkbox']")]
+                        .find(input => input.value === worker);
+                    
+                    if (checkbox.checked) {
+                        section.style.display = "block";
+                    } else {
+                        section.style.display = "none";
+                    }
+                });
+            }
+
+            document.getElementById("ppeForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                let formData = new FormData(this);
+
+                if (!formData.get("toolbox_meeting").size || !formData.get("work_permit").size) {
+                    alert("Please upload both Toolbox Meeting and Work Permit documents.");
+                    return;
+                }
+
+                let data = {};
+                formData.forEach((value, key) => {
+                    if (!data[key]) {
+                        data[key] = value;
+                    } else {
+                        data[key] = [].concat(data[key], value);
+                    }
+                });
+
+                console.log(data); // Send data to backend
+
+                alert("Form submitted successfully!");
+            });
+        });
+    </script>
+
+</body>
+</html>
